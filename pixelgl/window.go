@@ -55,10 +55,11 @@ type WindowConfig struct {
 type Window struct {
 	window *glfw.Window
 
-	bounds        pixel.Rect
-	canvas        *Canvas
-	vsync         bool
-	cursorVisible bool
+	bounds         pixel.Rect
+	canvas         *Canvas
+	vsync          bool
+	cursorVisible  bool
+	cursorDisabled bool
 
 	// need to save these to correctly restore a fullscreen window
 	restore struct {
@@ -344,6 +345,52 @@ func (w *Window) SetCursorVisible(visible bool) {
 // CursorVisible returns the visibility status of the mouse cursor.
 func (w *Window) CursorVisible() bool {
 	return w.cursorVisible
+}
+
+func (w *Window) SetCursorDisabled(disabled bool) {
+	w.cursorDisabled = disabled
+	if disabled {
+		w.window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+
+		mainthread.Call(func() {
+			w.window.SetCursorPosCallback(func(glfwW *glfw.Window, x, y float64) {
+				width, height := w.Bounds().W(), w.Bounds().H()
+				w.window.SetCursorPos(width/2, height/2)
+
+				dx, dy := x-width/2, y-height/2
+
+				w.tempInp.mouse.X += dx
+				w.tempInp.mouse.Y -= dy
+
+				if w.tempInp.mouse.X < 0 {
+					w.tempInp.mouse.X = 0
+				}
+				if w.tempInp.mouse.X > width {
+					w.tempInp.mouse.X = width
+				}
+				if w.tempInp.mouse.Y < 0 {
+					w.tempInp.mouse.Y = 0
+				}
+				if w.tempInp.mouse.Y > height {
+					w.tempInp.mouse.Y = height
+				}
+			})
+		})
+	} else {
+		mainthread.Call(func() {
+			w.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+			w.window.SetCursorPosCallback(func(glfwW *glfw.Window, x, y float64) {
+				w.tempInp.mouse = pixel.V(
+					x+w.bounds.Min.X,
+					(w.bounds.H()-y)+w.bounds.Min.Y,
+				)
+			})
+		})
+	}
+}
+
+func (w *Window) CursorDisabled() bool {
+	return w.cursorDisabled
 }
 
 // Note: must be called inside the main thread.
