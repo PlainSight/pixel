@@ -363,6 +363,9 @@ func (w *Window) SetCursorDisabled(disabled bool) {
 	w.cursorDisabled = disabled
 	if disabled {
 
+		w.tempInp.mouse.X = w.Bounds().W() / 2
+		w.tempInp.mouse.Y = w.Bounds().H() / 2
+
 		mainthread.Call(func() {
 			w.window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 			w.window.SetCursorPosCallback(func(glfwW *glfw.Window, x, y float64) {
