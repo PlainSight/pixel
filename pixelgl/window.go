@@ -362,9 +362,9 @@ func (w *Window) CursorVisible() bool {
 func (w *Window) SetCursorDisabled(disabled bool) {
 	w.cursorDisabled = disabled
 	if disabled {
-		w.window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 
 		mainthread.Call(func() {
+			w.window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
 			w.window.SetCursorPosCallback(func(glfwW *glfw.Window, x, y float64) {
 				width, height := w.Bounds().W(), w.Bounds().H()
 				w.window.SetCursorPos(width/2, height/2)
