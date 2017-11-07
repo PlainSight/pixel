@@ -363,11 +363,16 @@ func (w *Window) SetCursorDisabled(disabled bool) {
 	w.cursorDisabled = disabled
 	if disabled {
 
-		w.tempInp.mouse.X = w.Bounds().W() / 2
-		w.tempInp.mouse.Y = w.Bounds().H() / 2
+		w.tempInp.mouse.X = w.MousePosition().X
+		w.tempInp.mouse.Y = w.MousePosition().Y
 
 		mainthread.Call(func() {
 			w.window.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
+
+			width, height := w.Bounds().W(), w.Bounds().H()
+
+			w.window.SetCursorPos(width/2, height/2)
+
 			w.window.SetCursorPosCallback(func(glfwW *glfw.Window, x, y float64) {
 				width, height := w.Bounds().W(), w.Bounds().H()
 				w.window.SetCursorPos(width/2, height/2)
@@ -394,6 +399,7 @@ func (w *Window) SetCursorDisabled(disabled bool) {
 	} else {
 		mainthread.Call(func() {
 			w.window.SetInputMode(glfw.CursorMode, glfw.CursorNormal)
+			w.window.SetCursorPos(w.tempInp.mouse.X, w.bounds.H()-w.tempInp.mouse.Y)
 			w.window.SetCursorPosCallback(func(glfwW *glfw.Window, x, y float64) {
 				w.tempInp.mouse = pixel.V(
 					x+w.bounds.Min.X,
