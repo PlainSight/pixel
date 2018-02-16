@@ -46,6 +46,9 @@ type WindowConfig struct {
 	// Undecorated Window ommits the borders and decorations (close button, etc.).
 	Undecorated bool
 
+	// Whether the Window becomes an icon when unfocused
+	AutoIconify bool
+
 	// VSync (vertical synchronization) synchronizes Window's framerate with the framerate of
 	// the monitor.
 	VSync bool
@@ -98,6 +101,7 @@ func NewWindow(cfg WindowConfig) (*Window, error) {
 
 		glfw.WindowHint(glfw.Resizable, bool2int[cfg.Resizable])
 		glfw.WindowHint(glfw.Decorated, bool2int[!cfg.Undecorated])
+		glfw.WindowHint(glfw.AutoIconify, bool2int[cfg.AutoIconify])
 
 		var share *glfw.Window
 		if currWin != nil {
